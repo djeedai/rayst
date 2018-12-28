@@ -1,4 +1,7 @@
 # rayst
+
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Rust port of the [postcard-sized raytracer](https://twitter.com/lexfrench/status/1049196936161415169) from Andrew Kensler distributed by Pixar at GHC 2018.
 
 The initial code written in C/C++ is described by Fabien Sanglard in [a detailed blog post](http://fabiensanglard.net/postcard_pathtracer/).
