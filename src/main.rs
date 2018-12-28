@@ -326,8 +326,8 @@ fn trace<R: Rng + ?Sized>(pos: &Vec3, dir: &Vec3, rng: &mut R) -> Vec3 {
 }
 
 fn main() -> std::io::Result<()> {
-    let width = 192; //960;
-    let height = 108; //540;
+    let width : i32 = 192; //960;
+    let height : i32 = 108; //540;
     let samplecount = 16;
 
     let position = Vec3{ x:-22.0, y:5.0, z:25.0 };
@@ -344,6 +344,7 @@ fn main() -> std::io::Result<()> {
     print!("P6 {} {} 255 ", width, height);
     let sample_norm = 1.0 / (samplecount as f32);
     let sample_bias = 14.0 / 241.0;
+    let mut arr : Vec<u8> = Vec::with_capacity((width * height * 3) as usize);
     for y in (0..height).rev() {
         let fy0 : f32 = (y - height / 2) as f32;
         for x in (0..width).rev() {
@@ -360,14 +361,12 @@ fn main() -> std::io::Result<()> {
             color.x *= 255.0 / den.x;
             color.y *= 255.0 / den.y;
             color.z *= 255.0 / den.z;
-            let arr : [u8; 3] = [
-                color.x as u8,
-                color.y as u8,
-                color.z as u8
-            ];
-            std::io::stdout().write_all(&arr)?;
+            arr.push(color.x as u8);
+            arr.push(color.y as u8);
+            arr.push(color.z as u8);
         }
     }
+    std::io::stdout().write_all(&arr[..])?;
 
     Ok(())
 }
