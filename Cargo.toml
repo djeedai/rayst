@@ -6,6 +6,7 @@ description = "A Rust port of the postcard-sized raytracer from Andrew Kensler"
 license = "MIT"
 repository = "https://github.com/djeedai/rayst"
 readme = "README.md"
+edition = "2018"
 
 include = [
   "LICENSE",
