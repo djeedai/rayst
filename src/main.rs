@@ -1,7 +1,8 @@
 
 use std;
 use std::io::Write;
-use rand::Rng;
+use rand::{Rng, FromEntropy};
+use rand::rngs::SmallRng;
 
 // Naive port of http://fabiensanglard.net/postcard_pathtracer/ from C/C++ to Rust
 
@@ -268,11 +269,7 @@ fn ray_march(pos: &Vec3, dir: &Vec3, hit: &mut Hit) -> HitType {
     return HitType::None;
 }
 
-fn rand() -> f32 {
-    ::rand::thread_rng().gen()
-}
-
-fn trace(pos: &Vec3, dir: &Vec3) -> Vec3 {
+fn trace<R: Rng + ?Sized>(pos: &Vec3, dir: &Vec3, rng: &mut R) -> Vec3 {
     let mut origin = *pos;
     let mut direction = *dir;
     let mut hit = Hit{ pos: origin, norm: origin }; // useless init
@@ -289,8 +286,8 @@ fn trace(pos: &Vec3, dir: &Vec3) -> Vec3 {
             },
             HitType::Wall => {
                 let incidence = hit.norm.dot(&light_dir);
-                let p = 6.283185 * rand();
-                let c = rand();
+                let p = 6.283185 * rng.gen::<f32>();
+                let c = rng.gen::<f32>();
                 let s = (1.0 - c).sqrt();
                 let g = if hit.norm.z < 0.0 { -1.0 } else { 1.0 };
                 let u = -1.0 / (g + hit.norm.z);
@@ -342,7 +339,7 @@ fn main() -> std::io::Result<()> {
         z: goal.x * left.y - goal.y * left.x
     };
 
-    let mut rng = ::rand::thread_rng();
+    let mut rng = SmallRng::from_entropy();
 
     print!("P6 {} {} 255 ", width, height);
     let sample_norm = 1.0 / (samplecount as f32);
@@ -356,7 +353,7 @@ fn main() -> std::io::Result<()> {
                 let fx : f32 = rng.gen();
                 let fy : f32 = rng.gen();
                 let dir = (goal + left * (fx0 + fx) + up * (fy0 + fy)).normalized();
-                color += trace(&position, &dir);
+                color += trace(&position, &dir, &mut rng);
             }
             color = color * sample_norm + sample_bias;
             let den = &color + 1.0;
