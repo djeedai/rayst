@@ -1,0 +1,21 @@
+[package]
+name = "rayst"
+version = "0.1.0"
+authors = ["djeedai@gmail.com"]
+description = "A Rust port of the postcard-sized raytracer from Andrew Kensler"
+license = "MIT"
+repository = "https://github.com/djeedai/rayst"
+readme = "README.md"
+
+include = [
+  "LICENSE",
+  ".gitignore",
+  "Cargo.toml",
+  "src/*.rs",
+]
+
+[dependencies]
+rand = "0.6.1"
+
+[badges]
+maintenance = { status = "as-is" }
