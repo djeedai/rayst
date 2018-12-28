@@ -6,9 +6,15 @@ Rust port of the [postcard-sized raytracer](https://twitter.com/lexfrench/status
 
 The initial code written in C/C++ is described by Fabien Sanglard in [a detailed blog post](http://fabiensanglard.net/postcard_pathtracer/).
 
+**Disclaimer:** This Rust port produces the same image as the C/C++ original code, which means is optimized for source code size and is therefore highly de-optimized in terms of performance. On top of that, this is a naive Rust port and my first ever Rust program, so it likely contains extra inefficiencies. I have no intention of even trying to optimize the raytracer, but feedback on the Rust code itself is encouraged!
+
+## Usage
+
 As with the original code, this generates a PPM image on the standard output, best redirected to a file:
 ```
 rayst > pixar.ppm
 ```
 
-**Disclaimer:** This Rust port produces the same image as the C/C++ original code, which means is optimized for source code size and is therefore highly de-optimized in terms of performance. On top of that, this is a naive Rust port and my first ever Rust program, so it likely contains extra inefficiencies. I have no intention of even trying to optimize the raytracer, but feedback on the Rust code itself is encouraged!
+After that the image can be opened with any tool supporting the PPM format, like Gimp for example.
+
+![Result image, 256 samples per pixel](https://raw.githubusercontent.com/djeedai/rayst/master/assets/pixar_256spp.png)
