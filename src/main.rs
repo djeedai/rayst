@@ -366,7 +366,5 @@ fn main() -> std::io::Result<()> {
             arr.push(color.z as u8);
         }
     }
-    std::io::stdout().write_all(&arr[..])?;
-
-    Ok(())
+    std::io::stdout().write_all(&arr[..])
 }
