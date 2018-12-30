@@ -1,5 +1,5 @@
 
-use std;
+use std::{self, thread};
 use std::io::Write;
 use rand::{Rng, FromEntropy};
 use rand::rngs::SmallRng;
@@ -326,8 +326,8 @@ fn trace<R: Rng + ?Sized>(pos: &Vec3, dir: &Vec3, rng: &mut R) -> Vec3 {
 }
 
 fn main() -> std::io::Result<()> {
-    let width : i32 = 192; //960;
-    let height : i32 = 108; //540;
+    let width : i32 = 960;
+    let height : i32 = 540;
     let samplecount = 16;
 
     let position = Vec3{ x:-22.0, y:5.0, z:25.0 };
@@ -339,32 +339,54 @@ fn main() -> std::io::Result<()> {
         z: goal.x * left.y - goal.y * left.x
     };
 
-    let mut rng = SmallRng::from_entropy();
-
+    // Write the image header
     print!("P6 {} {} 255 ", width, height);
-    let sample_norm = 1.0 / (samplecount as f32);
-    let sample_bias = 14.0 / 241.0;
-    let mut arr : Vec<u8> = Vec::with_capacity((width * height * 3) as usize);
-    for y in (0..height).rev() {
-        let fy0 : f32 = (y - height / 2) as f32;
-        for x in (0..width).rev() {
-            let mut color = Vec3{ x:0.0, y:0.0, z:0.0 };
-            let fx0 : f32 = (x - width / 2) as f32;
-            for _ in 0..samplecount {
-                let fx : f32 = rng.gen();
-                let fy : f32 = rng.gen();
-                let dir = (goal + left * (fx0 + fx) + up * (fy0 + fy)).normalized();
-                color += trace(&position, &dir, &mut rng);
+    
+    let num_threads : i32 = 4;
+    let mut thread_handles = Vec::with_capacity(num_threads as usize);
+    let height_block = (height + num_threads - 1) / num_threads;
+    for n in 0..num_threads {
+        let y_begin = n * height_block;
+        let y_end = ((n + 1) * height_block).min(height);
+        let handle = thread::spawn(move || {
+            let mut rng = SmallRng::from_entropy();
+            let data_size = ((y_end - y_begin) * width) as usize * 3;
+            let mut data = Vec::with_capacity(data_size);
+            let sample_norm = 1.0 / (samplecount as f32);
+            let sample_bias = 14.0 / 241.0;
+            for y in (y_begin..y_end).rev() {
+                let fy0 : f32 = (y - height / 2) as f32;
+                for x in (0..width).rev() {
+                    let mut color = Vec3{ x:0.0, y:0.0, z:0.0 };
+                    let fx0 : f32 = (x - width / 2) as f32;
+                    for _ in 0..samplecount {
+                        let fx : f32 = rng.gen();
+                        let fy : f32 = rng.gen();
+                        let dir = (goal + left * (fx0 + fx) + up * (fy0 + fy)).normalized();
+                        color += trace(&position, &dir, &mut rng);
+                    }
+                    color = color * sample_norm + sample_bias;
+                    let den = &color + 1.0;
+                    color.x *= 255.0 / den.x;
+                    color.y *= 255.0 / den.y;
+                    color.z *= 255.0 / den.z;
+                    data.push(color.x as u8);
+                    data.push(color.y as u8);
+                    data.push(color.z as u8);
+                }
             }
-            color = color * sample_norm + sample_bias;
-            let den = &color + 1.0;
-            color.x *= 255.0 / den.x;
-            color.y *= 255.0 / den.y;
-            color.z *= 255.0 / den.z;
-            arr.push(color.x as u8);
-            arr.push(color.y as u8);
-            arr.push(color.z as u8);
-        }
+            return data;
+        });
+        thread_handles.push(handle);
     }
-    std::io::stdout().write_all(&arr[..])
+
+    // Write data from threads in reverse order, last created thread first,
+    // so that image rows are also written in reverse order.
+    while !thread_handles.is_empty() {
+        let handle = thread_handles.pop().unwrap();
+        let data = handle.join().unwrap();
+        std::io::stdout().write_all(&data[..])?;
+    }
+
+    Ok(())
 }
