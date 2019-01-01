@@ -17,6 +17,7 @@ include = [
 
 [dependencies]
 rand = "0.6.1"
+num_cpus = "1.0"
 
 [badges]
 maintenance = { status = "as-is" }

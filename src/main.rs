@@ -4,6 +4,7 @@ use std::io::Write;
 use rand::{Rng, FromEntropy};
 use rand::rngs::SmallRng;
 
+extern crate num_cpus;
 // Naive port of http://fabiensanglard.net/postcard_pathtracer/ from C/C++ to Rust
 
 #[derive(Debug, Copy, Clone)]
@@ -342,7 +343,7 @@ fn main() -> std::io::Result<()> {
     // Write the image header
     print!("P6 {} {} 255 ", width, height);
     
-    let num_threads : i32 = 4;
+    let num_threads : i32 = num_cpus::get() as i32;
     let mut thread_handles = Vec::with_capacity(num_threads as usize);
     let height_block = (height + num_threads - 1) / num_threads;
     for n in 0..num_threads {
